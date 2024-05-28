@@ -75,12 +75,18 @@ def non_editing_region_negative_MSE(
 ):
     scores = []
     processor = AutoProcessor.from_pretrained(clip_text_path)
+    print("[!!!] Shape of origin_image before processing: ", origin_image.shape)
     origin_image = processor(images=origin_image, return_tensors="pt")['pixel_values']
+    print("[!!!] Shape of origin_image after processing: ", origin_image.shape)
     non_editing_region_mask = change_mask_shape(1 - editing_region_mask, origin_image)
+    print("[!!!] Shape of ne_mask: ", non_editing_region_mask.shape)
     non_editing_region_of_origin_image = origin_image * non_editing_region_mask
+    print("[!!!] Shape of ne_region_origin: ", non_editing_region_of_origin_image.shape)
     for i in range(len(candidate_images)):
         target_image = processor(images=candidate_images[i], return_tensors='pt')['pixel_values']
+        print(f"Shape of target_image {i} after processing:", target_image.shape)
         non_editing_region_of_target_image = target_image * non_editing_region_mask
+        print(f"Shape of ne of target_image {i} after processing:", non_editing_region_of_target_image.shape)
         score = -F.mse_loss(non_editing_region_of_origin_image, non_editing_region_of_target_image)
         scores.append(score.item())
     return scores
