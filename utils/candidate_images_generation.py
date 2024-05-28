@@ -22,6 +22,18 @@ def candidate_images_generation(
     width=512,
     save_path='',
 ):
+    # Define the directory to save/load images
+    save_dir = os.path.join(save_path, prompt_change)
+    os.makedirs(save_dir, exist_ok=True)
+
+    # Check if images already exist
+    existing_images = [os.path.join(save_dir, f) for f in sorted(os.listdir(save_dir)) if f.endswith('.png')]
+    if existing_images:
+        print(f"Loading existing images from {save_dir}")
+        images = [Image.open(img_path) for img_path in existing_images]
+        return images
+
+
     origin_image_latent = all_latents[0]
     batch_size = num_inference_steps // 2
     text_inputs = model.tokenizer(
@@ -81,5 +93,11 @@ def candidate_images_generation(
         edited_latents = torch.cat([edited_latents, latents[i].unsqueeze(0)])
     edited_latents[0] = all_latents[0]
     images = basic_utils.latent2image(model.vae, edited_latents)
+
+    # Save the generated images
+    for idx, img in enumerate(images):
+        img_path = os.path.join(save_dir, f'{idx:04d}.png')
+        img.save(img_path)
+        
     # basic_utils.view_images(images, save_path=os.path.join(save_path, prompt_change[text_idx - 1]) + '/', file_name="0000.png")    
     return images

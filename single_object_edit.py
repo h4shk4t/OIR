@@ -48,6 +48,7 @@ def main(args):
             num_inference_steps=NUM_DDIM_STEPS, 
             guidance_scale=GUIDANCE_SCALE, 
             all_latents=all_latents,
+            save_path='/content/candidates/',
         )
     
     # 4. select the optimal inversion step from candidate images
